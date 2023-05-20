@@ -1,0 +1,100 @@
+#define LED_VERDE   2
+#define LED_AMARELO 3
+#define LED_VERMELHO 4
+#define BOMBA 9
+#define pinoTrig 13 
+#define pinoEcho 12 
+
+#define DESLIGADA LOW
+#define LIGADA HIGH
+#define APAGADO LOW
+#define ACESO   HIGH
+
+void setup(){
+  /////////////////SENSOR///////////////////////////
+  Serial.begin(9600);// Inicia a comunicação serial
+
+  pinMode(pinoTrig, OUTPUT);
+  pinMode(pinoEcho, INPUT);
+  digitalWrite(pinoTrig, LOW); // Inicia com o pino em nível baixo
+  ////////////////////SENSOR////////////////////////
+  
+    // inicializa os led sinalizadores
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_AMARELO, OUTPUT);
+  pinMode(LED_VERMELHO, OUTPUT);
+    // inicializa o pino da bomba como saída
+  pinMode(BOMBA, OUTPUT);
+}
+
+void loop(){
+ 
+	float d = distancia();
+  
+  Serial.print("Distancia em cm: ");
+  Serial.println(d);
+
+  delay(100);
+/////////////////SENSOR///////////////////////////
+  
+  // trata cada um dos estados do reservatório!
+  	//CHEIA
+  if (d <= 150 && d > 75){ 
+    led_verde(ACESO);
+    led_amarelo(APAGADO);
+    led_vermelho(APAGADO);
+  } // CAIXA INTERMEDIO
+  else if (d <= 75 && d > 20){
+    led_amarelo(ACESO);
+    led_verde(APAGADO);
+    led_vermelho(APAGADO);
+  } // CAIXA VAZIA
+  else if (d <= 20 && d > 3){
+    led_vermelho(ACESO);
+    led_verde(APAGADO);
+    led_amarelo(APAGADO);
+    bomba_ligada();
+  }
+  else{ //ERRO
+    led_vermelho(ACESO);
+    led_verde(ACESO);
+    led_amarelo(ACESO);
+  }
+}
+
+
+float distancia()// Funçao de leitura da distancia
+{
+  float dur;
+  digitalWrite(pinoTrig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(pinoTrig, LOW);
+  dur = pulseIn(pinoEcho, HIGH);
+
+  return dur/58.82; 
+} 
+
+// acende ou apaga o led vermelho
+void led_vermelho(boolean estado){
+  digitalWrite(LED_VERMELHO, estado);
+}
+
+// acende ou apaga o led amarelo
+void led_amarelo(boolean estado){
+  digitalWrite(LED_AMARELO, estado);
+}
+
+// acende ou apaga o led verde
+void led_verde(boolean estado){
+  digitalWrite(LED_VERDE, estado);
+}
+
+// aciona a bomba que enche o reservatório
+void bomba_ligada(){
+  digitalWrite(BOMBA, LIGADA);
+  float d = distancia();
+  do {
+    float d = distancia();
+  } while (d >=150);
+  digitalWrite(BOMBA, DESLIGADA);
+}
