@@ -38,27 +38,26 @@ void loop(){
 /////////////////SENSOR///////////////////////////
   
   // trata cada um dos estados do reservatório!
-  	//CHEIA
-  if (d <= 150 && d > 75){ 
-    led_verde(ACESO);
-    led_amarelo(APAGADO);
-    led_vermelho(APAGADO);
-  } // CAIXA INTERMEDIO
-  else if (d <= 75 && d > 20){
-    led_amarelo(ACESO);
-    led_verde(APAGADO);
-    led_vermelho(APAGADO);
-  } // CAIXA VAZIA
-  else if (d <= 20 && d > 3){
-    led_vermelho(ACESO);
-    led_verde(APAGADO);
-    led_amarelo(APAGADO);
-    bomba_ligada();
+  	//NÍVEL CHEIO
+  if (d <= 160 && d > 75){ 
+	nivel_cheio();
   }
-  else{ //ERRO
-    led_vermelho(ACESO);
-    led_verde(ACESO);
-    led_amarelo(ACESO);
+  // NÍVEL INTERMEDIÁRIO
+  else if (d <= 75 && d > 20){
+	nivel_intermedio();
+  } 
+  // NÍVEL VAZIO
+  else if (d <= 20 && d > 3){
+	nivel_vazio();
+  }
+  else if (bomba_ligada()){  
+    if (d >=147){
+  digitalWrite(BOMBA, DESLIGADA);
+    }
+  }
+  //ERRO
+  else{
+	erro();
   }
 }
 
@@ -74,6 +73,30 @@ float distancia()// Funçao de leitura da distancia
   return dur/58.82; 
 } 
 
+void nivel_cheio (){
+  led_verde(ACESO);
+  led_amarelo(APAGADO);
+  led_vermelho(APAGADO);
+}
+
+void nivel_intermedio (){
+  led_amarelo(ACESO);
+  led_verde(APAGADO);
+  led_vermelho(APAGADO);
+}
+
+void nivel_vazio (){
+  led_vermelho(ACESO);
+  led_verde(APAGADO);
+  led_amarelo(APAGADO);
+  bomba_ligada();
+}
+
+void erro (){
+  led_vermelho(ACESO);
+  led_verde(ACESO);
+  led_amarelo(ACESO);
+}
 // acende ou apaga o led vermelho
 void led_vermelho(boolean estado){
   digitalWrite(LED_VERMELHO, estado);
@@ -90,11 +113,6 @@ void led_verde(boolean estado){
 }
 
 // aciona a bomba que enche o reservatório
-void bomba_ligada(){
+bool bomba_ligada(){
   digitalWrite(BOMBA, LIGADA);
-  float d = distancia();
-  do {
-    float d = distancia();
-  } while (d >=150);
-  digitalWrite(BOMBA, DESLIGADA);
 }
